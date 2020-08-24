@@ -63,5 +63,5 @@ console.log(this.whatever.value)
 * Updating the binded property will now *automagically* re-render any other component `hardBind`-ed to that same property
     
 ## Warning
-* Components' states interfaces **must** extend `{ State }` from `'flux-component'`
-* Mutating a hard-binded property inside the `render()` method will cause an **infinite render loop**! ;)
+* Components' state `interfaces` **must** extend `{ State }` from `'flux-component'`
+* Mutating a `hard-bind`-ed property inside the `render()` method will cause an **infinite render loop**! ;)
