@@ -23,7 +23,7 @@ This implementation happily relies on almost **no boilerplate**: just provide yo
 import makeComponent from flux-component
 
 const initialSharedState {
-    whatever: 42
+    answer: 42
 }
 
 export default makeComponent(initialSharedState)
@@ -35,32 +35,32 @@ import Component from './FluxComponent'
 class MyComponent extends Component {/*...*/}
 ```
 ## Usage
-* `hardBind()` or `softBind()` your `whatever` property passing `Component.shared.whatever` as a parameter
+* `hardBind()` or `softBind()` your `answer` property passing `Component.shared.answer` as a parameter
 ```typescript
 import Component from './FluxComponent'
 
 class MyComponent extends Component {
 
-    whatever = this.hardBind(Component.shared.whatever) // Type gets inherited from initial state 
+    answer = this.hardBind(Component.shared.answer) // Type gets inherited from initial state 
     
     /* 
-        (property) MyComponent.whatever: {
+        (property) MyComponent.answer: {
             value: number;
         }
     */
 
     render() {
         return (
-          <div> { this.whatever.value } </div>
+          <div> { this.answer.value } </div>
         )
     }
 }
 ```
-* You can freely access and mutate `this.whatever.value`:
+* You can freely access and mutate `this.answer.value`:
 ```typescript
 //You can now do this!
-this.whatever.value++
-console.log(this.whatever.value)
+this.answer.value++
+console.log(this.answer.value)
 ```
 * Updating the binded property will now *automagically* re-render any other component `hardBind`-ed to that same property
     
