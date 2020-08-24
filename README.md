@@ -6,8 +6,7 @@
 
 You can now define **class properties** assigning them **references** to values in a static "shared store": thanks to their *setters*, mutating these references will instead automatically update the store, as well as each component "subscribed" (**binded**) to that same key.
     
-Components `hardBind`-ed to a key in the store will automatically re-render **only** when that exact key gets updated. 
-(How cool is that? A lot indeed.)
+Components `hardBind`-ed to a key in the store will automatically re-render **only** when that exact key gets updated. *(How cool is that? A lot indeed.)*
 
 To avoid unnecessary re-renders, you can also `softBind` a value to the component: you may want to do so with a **value shared among other `hardBind`-ed components** (where it will actually get rendered), or with a **"static" function** (which never gets rendered).
 
