@@ -22,11 +22,7 @@ This implementation happily relies on almost **no boilerplate**: just provide yo
 ```typescript
 import makeComponent from flux-component
 
-interface ISharedState {
-    whatever: number
-}
-
-const initialSharedState: ISharedState {
+const initialSharedState {
     whatever: 42
 }
 
@@ -45,7 +41,11 @@ import Component from './FluxComponent'
 
 class MyComponent extends Component {
 
-    whatever = this.hardBind(Component.shared.whatever)
+    whatever = this.hardBind(Component.shared.whatever) 
+    // Type inherited from initial state:
+    // (property) MyComponent.whatever: {
+    //    value: number;
+    // }
 
     render() {
         return (
