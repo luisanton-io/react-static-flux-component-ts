@@ -1,6 +1,6 @@
 {
   "name": "flux-component",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "React component extension providing elegant flux management with automatic, efficient dispatching.",
   "main": "build/index.js",
   "scripts": {
