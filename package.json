@@ -7,7 +7,9 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "react", "flux", "redux", "easy", "static", "state"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

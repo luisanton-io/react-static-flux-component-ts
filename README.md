@@ -35,7 +35,7 @@ import Component from './FluxComponent'
 class MyComponent extends Component {/*...*/}
 ```
 ## Usage
-* `hardBind()` or `softBind()` your `answer` property passing `Component.shared.answer` as a parameter
+* `hardBind()` or `softBind()` your property (e.g. `answer`) passing its node in the singleton as a parameter (e.g. `Component.shared.answer`)
 ```typescript
 import Component from './FluxComponent'
 
