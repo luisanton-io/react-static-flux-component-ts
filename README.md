@@ -13,7 +13,7 @@ To avoid unnecessary re-renders, you can also `softBind` a value to the componen
 
 #### Fully typed
 
-This implementation relies on your **custom interface** in input. All binded properties will inherit the **correct types** and preserve TS type-checking purpose.
+This implementation relies on your **intial shared state** in input. All binded properties will inherit the **correct types** and preserve TS type-checking purpose.
 
 #### Close to 0 boilerplate required!
 This implementation happily relies on almost **no boilerplate**: just provide your interface to the `makeComponent()`, and then always inherit from your `FluxComponent.tsx`
@@ -41,11 +41,13 @@ import Component from './FluxComponent'
 
 class MyComponent extends Component {
 
-    whatever = this.hardBind(Component.shared.whatever) 
-    // Type inherited from initial state:
-    // (property) MyComponent.whatever: {
-    //    value: number;
-    // }
+    whatever = this.hardBind(Component.shared.whatever) // Type gets inherited from initial state 
+    
+    /* 
+        (property) MyComponent.whatever: {
+            value: number;
+        }
+    */
 
     render() {
         return (
