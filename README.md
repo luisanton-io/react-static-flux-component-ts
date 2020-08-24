@@ -16,7 +16,7 @@ To avoid unnecessary re-renders, you can also `softBind` a value to the componen
 This implementation relies on your **intial shared state** in input. All binded properties will inherit the **correct types** and preserve TS type-checking purpose.
 
 #### Close to 0 boilerplate required!
-This implementation happily relies on almost **no boilerplate**: just provide your interface to the `makeComponent()`, and then always inherit from your `FluxComponent.tsx`
+This implementation happily relies on almost **no boilerplate**: just provide your initial state to the `makeComponent()`, and then always inherit from your `FluxComponent.tsx`
 
 * Create your `FluxComponent.tsx` 
 ```typescript
