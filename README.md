@@ -4,7 +4,7 @@
 ## Features
 
 
-You can now define **class properties** assigning **references** to the same value in a static "shared store": thanks to their *setters*, mutating these values will automatically update the store, as well as each component "subscribed" (**binded**) to that same key.
+You can now define **class properties** assigning **references** to values in a static "shared store": thanks to their *setters*, mutating these references will instead automatically update the store, as well as each component "subscribed" (**binded**) to that same key.
     
 Components `hardBind`-ed to a key in the store will then automatically re-render **only when that exact key gets updated**. 
 (How cool is that? A lot indeed.)
