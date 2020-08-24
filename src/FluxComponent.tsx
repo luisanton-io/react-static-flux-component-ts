@@ -69,8 +69,11 @@ import React from 'react';
 import _ from 'underscore';
 import uniqid from 'uniqid'
 
-// A shared entry is a tuple of a secret string and its corresponding value:
-type SharedKey<T> = [string, T]
+// A shared entry is a pair of a secret string and its corresponding value:
+interface SharedKey<T> {
+    secret: string,
+    value: T
+}
 
 /*
    The shared store maps an incoming interface from 
@@ -101,7 +104,7 @@ export default <SS extends {}>(initSharedState: SS) =>
         // Triggers component re-render on update.
         // Use this when the binded value is needed in this component's rendering.
         protected hardBind = <T extends unknown>(svPair: SharedKey<T>) => {
-            const [secret, value] = svPair
+            const { secret, value } = svPair
 
             if (this.sharedKeys.length === 0) {
                 FluxComponent.children.push(this)
@@ -122,21 +125,21 @@ export default <SS extends {}>(initSharedState: SS) =>
 
         // Doesn't trigger component re-render when updated.
         // Use this to update states shared among external components.
-        protected softBind = <T extends unknown>([secret,]: SharedKey<T>) => {
-            let [key] = Object.entries(FluxComponent.__sharedState).find(([, [_secret,]]) => {
-                return _secret === secret
+        // protected softBind = <T extends unknown>([secret,]: SharedKey<T>) => {
+        protected softBind = <T extends unknown>({ secret }: SharedKey<T>) => {
+            let [key] = Object.entries(FluxComponent.__sharedState).find(([, { secret }]) => {
+                return secret === secret
             })!
             let self = this
 
             return {
                 get value() {
-                    let [, value] = FluxComponent.__sharedState[key]
-                    return value as T
+                    return FluxComponent.__sharedState[key].value as T
                 },
-                set value(newValue: T) {
+                set value(value: T) {
                     self.__setSharedState({
                         ...FluxComponent.__sharedState,
-                        [key]: [secret, newValue]
+                        [key]: { secret, value }
                     } as SharedStore<SS>)
                 }
             }
@@ -175,7 +178,8 @@ export default <SS extends {}>(initSharedState: SS) =>
             let initializedState: SharedSubset = {}
 
             for (let [key, value] of Object.entries(initialSharedState)) {
-                initializedState[key] = [uniqid(), value]
+                const secret = uniqid()
+                initializedState[key] = { secret, value }
             }
 
             FluxComponent.__sharedState = initializedState as SharedStore<SS>
@@ -217,7 +221,7 @@ export default <SS extends {}>(initSharedState: SS) =>
         private __bindKeys = () => {
             let shared: SharedSubset = Object.assign({}, FluxComponent.__sharedState)
 
-            for (let [key, [secret,]] of Object.entries(FluxComponent.__sharedState)) {
+            for (let [key, { secret }] of Object.entries(FluxComponent.__sharedState)) {
                 if (!this.sharedKeys.includes(secret)) delete shared[key]
             }
 
@@ -232,6 +236,4 @@ export default <SS extends {}>(initSharedState: SS) =>
         }
 
         //#endregion
-
-
     }
