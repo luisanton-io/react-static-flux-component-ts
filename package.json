@@ -1,0 +1,25 @@
+{
+  "name": "flux-component",
+  "version": "1.0.0",
+  "description": "React component extension providing elegant flux management with automatic, efficient dispatching.",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/prop-types": "^15.7.3",
+    "@types/react": "^16.9.46",
+    "@types/underscore": "^1.10.22",
+    "@types/uniqid": "^5.2.0",
+    "react": "^16.13.1",
+    "underscore": "^1.10.2",
+    "uniqid": "^5.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^4.0.2"
+  }
+}
