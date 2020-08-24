@@ -3,6 +3,7 @@
 
 ## Features
 
+#### Automatic dispatching
 
 You can now define **class properties** assigning them **references** to values in a static "shared store": thanks to their *setters*, mutating these references will instead automatically update the store, as well as each component "subscribed" (**binded**) to that same key.
     
@@ -13,8 +14,6 @@ To avoid unnecessary re-renders, you can also `softBind` a value to the componen
 #### Fully typed
 
 This implementation relies on your **custom interface** in input. All binded properties will inherit the **correct types** and preserve TS type-checking purpose.
-
-## Boilerplate
 
 #### Close to 0 boilerplate required!
 This implementation happily relies on almost **no boilerplate**: just provide your interface to the `makeComponent()`, and then always inherit from your `FluxComponent.tsx`
