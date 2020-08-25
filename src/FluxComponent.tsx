@@ -25,7 +25,8 @@ type SharedStore<SS> = {
 }
 
 // Subset of SharedStore
-type SharedSubset = Record<string, SharedKey<unknown>>
+type SharedSubset = Record<string, unknown>
+type SharedSubsetEntry = [string,SharedKey<unknown>]
 
 // Component's state: children will need to extend this State interface.
 export interface State {
@@ -35,12 +36,14 @@ export interface State {
 //https://github.com/microsoft/TypeScript/issues/30355#issuecomment-671095933
 export default <SS extends {}>(initSharedState: SS) =>
     class FluxComponent<P extends {} = {}, S extends State = State> extends React.Component<P, S> {
+
+        //Exposed and write-protected mirror of private __shared property
         public static readonly shared: SharedStore<SS> = FluxComponent.makeStore(initSharedState)
 
         // Triggers component re-render on update.
         // Use this when the binded value is needed in this component's rendering.
-        protected hardBind = <T extends unknown>(svPair: SharedKey<T>) => {
-            const { secret, value } = svPair
+        protected hardBind = <T extends unknown>(sharedKey: SharedKey<T>) => {
+            const { secret, value } = Object.assign({}, sharedKey)
 
             if (this.sharedKeys.length === 0) {
                 FluxComponent.children.push(this)
@@ -55,28 +58,31 @@ export default <SS extends {}>(initSharedState: SS) =>
                     [secret]: value
                 }
             })
-
-            return this.softBind<T>(svPair)
+            
+            return this.softBind<T>(sharedKey)
         }
-
+        
         // Doesn't trigger component re-render when updated.
         // Use this to update states shared among external components.
-        // protected softBind = <T extends unknown>([secret,]: SharedKey<T>) => {
-        protected softBind = <T extends unknown>({ secret }: SharedKey<T>) => {
-            let [key] = Object.entries(FluxComponent.__sharedState).find(([, { secret }]) => {
-                return secret === secret
-            })!
-            let self = this
-
-            return {
-                get value() {
-                    return FluxComponent.__sharedState[key].value as T
-                },
-                set value(value: T) {
-                    self.__setSharedState({
-                        ...FluxComponent.__sharedState,
+            protected softBind = <T extends unknown>(sharedKey: SharedKey<T>) => {
+                
+                let { secret } = Object.assign({}, sharedKey)
+                let [key] = (Object.entries(FluxComponent.__shared) as SharedSubsetEntry[]).find( ([,sharedKey]) => {  
+                    return secret === sharedKey.secret
+                })!
+                
+                return {
+                    get value() {
+                        return FluxComponent.__shared[key].value as T
+                    },
+                    set value(value: T) {
+                     
+                    FluxComponent.__shared = Object.freeze({
+                        ...FluxComponent.__shared,
                         [key]: { secret, value }
                     } as SharedStore<SS>)
+
+                    FluxComponent.__dispatchToChildren<T>()
                 }
             }
         }
@@ -106,38 +112,32 @@ export default <SS extends {}>(initSharedState: SS) =>
             this.mounted = true
         }
 
-        private static __sharedState: SharedSubset
+        private static __shared: SharedStore<SS>
 
         // Had to declare this protected instead of private, to call it 
         // from the anonymous class returning from makeComponent.
         protected static makeStore(initialSharedState: SS) {
-            let initializedState: SharedSubset = {}
+            let initializedState = {}
 
             for (let [key, value] of Object.entries(initialSharedState)) {
                 const secret = uniqid()
                 initializedState[key] = { secret, value }
             }
 
-            FluxComponent.__sharedState = initializedState as SharedStore<SS>
+            FluxComponent.__shared = initializedState as SharedStore<SS>
 
-            let _shared = {}
+            let shared = {}
 
-            //FluxComponent.shared[key] dynamically refers to FluxComponent.__sharedState[key]
-            for (let key of Object.keys(FluxComponent.__sharedState)) {
-                Object.defineProperty(_shared, key, {
+            //FluxComponent.shared[key] dynamically refers to FluxComponent.__shared[key]
+            for (let key of Object.keys(FluxComponent.__shared)) {
+                Object.defineProperty(shared, key, {
                     get: function () {
-                        return FluxComponent.__sharedState[key]
+                        return FluxComponent.__shared[key]
                     }
                 })
             }
 
-            return _shared as SharedStore<SS>
-        }
-
-        // newSharedState type must match SharedStore<SS> and therefore method can't be static
-        private async __setSharedState(newSharedState: SharedStore<SS>) {
-            FluxComponent.__sharedState = Object.freeze(newSharedState)
-            await this.__dispatchToChildren()
+            return shared as SharedStore<SS>
         }
 
         private static children: FluxComponent[] = []
@@ -145,30 +145,20 @@ export default <SS extends {}>(initSharedState: SS) =>
         // Dispatching to each children its binded keys values only
         private sharedKeys: string[]
 
-        private async __dispatchToChildren() {
-            let bindings: Promise<SharedSubset>[] = []
-            FluxComponent.children.forEach(child => {
-                bindings.push(child.__bindKeys())
-            });
+        private static __dispatchToChildren<T>() {
+            for (let child of this.children) {
+                let shared: SharedSubset = {}
 
-            return Promise.all(bindings)
-        }
+                for (let {secret, value} of Object.values(FluxComponent.__shared) as SharedKey<T>[]) {
+                    if (child.sharedKeys.includes(secret)) {
+                        shared[secret] = value
+                    }
+                }
 
-        private __bindKeys = () => {
-            let shared: SharedSubset = Object.assign({}, FluxComponent.__sharedState)
-
-            for (let [key, { secret }] of Object.entries(FluxComponent.__sharedState)) {
-                if (!this.sharedKeys.includes(secret)) delete shared[key]
+                if (!_.isEqual(shared, child.state.shared)) {
+                    child.setState({...child.state, shared})
+                }
             }
-
-            return new Promise<SharedSubset>((resolve) => {
-                if (_.isEqual(shared, this.state.shared)) resolve(shared)
-                else super.setState({
-                    ...this.state, shared
-                }, () => {
-                    resolve(shared)
-                })
-            })
         }
 
         //#endregion
