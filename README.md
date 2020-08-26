@@ -117,4 +117,6 @@ export default makeComponent(untrackedShared, trackedShared)
 * Mutating a `hard-bind`-ed property inside the `render()` method will cause an **infinite render loop**! ;)
 
 ## Example Repo
+* [Minimal Counter Example](https://codesandbox.io/s/fervent-banzai-168gu)
 * [ToDo List With History](https://github.com/luisanton-io/todos-ts-flx) based on [Redux ToDo example](https://redux.js.org/basics/example)
+
