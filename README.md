@@ -3,7 +3,7 @@
 
 Nobody likes `React-Redux` boilerplate code (and if you do... chances are [nobody likes *you* as well](https://tenor.com/view/notarapper-rapbattle-gif-4816410)).
 
-While [somebody](https://medium.com/@morgler/dont-use-redux-9e23b5381291), together with [somebody else](http://blog.flaviocaetano.com/post/redux-sucks-with-react-native/) and the [rest of the world](https://www.google.com/search?q=redux+sucks) are complaining about this, [still someone else](https://medium.com/@shanebdavis/how-i-eliminated-redux-boilerplate-with-hooks-for-redux-bd308d5abbdd) is already trying to figure out a way avoid all of this.
+While [somebody](https://medium.com/@morgler/dont-use-redux-9e23b5381291), together with [somebody else](http://blog.flaviocaetano.com/post/redux-sucks-with-react-native/) and the [rest of the world](https://www.google.com/search?q=redux+sucks) are complaining about this, [still someone else](https://medium.com/@shanebdavis/how-i-eliminated-redux-boilerplate-with-hooks-for-redux-bd308d5abbdd) is already trying to figure out a way to avoid all of this.
 
 I'm just humbly presenting my solution:
 
