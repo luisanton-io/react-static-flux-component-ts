@@ -33,7 +33,7 @@ This implementation happily relies on almost **no boilerplate**: just provide yo
 
 * Create your `FluxComponent.tsx` 
 ```TSX
-import makeComponent from flux-component
+import makeComponent from react-flux-component
 
 //  Albeit not mandatory, it's always a good idea to implement a defined interface:
 //  interface IShared {
@@ -52,7 +52,8 @@ import Component from './FluxComponent'
 
 class MyComponent extends Component {/*...*/}
 ```
-* *Note*: this implementation won't generate a **store history**. Check the [History section](https://github.com/luisanton-io/react-static-flux-component-ts#history-actions) if you need **history actions**.
+* *Note*: this implementation won't generate a **store history**. Check the [History section](https://github.com/luisanton-io/react-static-
+-ts#history-actions) if you need **history actions**.
 
 ## Usage
 * `hardBind()` or `softBind()` your property (e.g. `answer`) passing its node in the singleton as a parameter (e.g. `Component.shared.answer`)
@@ -90,7 +91,7 @@ console.log(this.answer.value)
 * Therefore you can specify two separate initial states as argument in `makeComponent()`, the first containing *untracked* and the second containing *tracked* shared properties.
 
 ```TSX
-import makeComponent from flux-component
+import makeComponent from react-flux-component
 
 const untrackedShared {
     darkTheme: false
@@ -113,7 +114,7 @@ export default makeComponent(untrackedShared, trackedShared)
 * Should you need to handle **further logic**, note that these methods **return a** `boolean` **value**, reflecting whether the action went throught correctly.
     
 ## Warning
-* Components' state `interfaces` **must** extend `{ State }` from `'flux-component'`
+* Components' state `interfaces` **must** extend `{ State }` from `'react-flux-component'`
 * Mutating a `hard-bind`-ed property inside the `render()` method will cause an **infinite render loop**! ;)
 
 ## Example Repo
