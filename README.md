@@ -1,7 +1,7 @@
 # F L U X - C O M P O N E N T 
 ###### Created by [Luis Antonio Canettoli Ordoñez](http://luisanton.io)
 
-Nobody likes `React-Redux` boilerplate code (and if you do... chances are nobody likes **you** as well).
+Nobody likes `React-Redux` boilerplate code (and if you do... chances are [nobody likes *you* as well](https://tenor.com/view/notarapper-rapbattle-gif-4816410).
 
 While [somebody](https://medium.com/@morgler/dont-use-redux-9e23b5381291), together with [somebody else](http://blog.flaviocaetano.com/post/redux-sucks-with-react-native/) and the [rest of the world](https://www.google.com/search?q=redux+sucks) are complaining about this, [still someone else](https://medium.com/@shanebdavis/how-i-eliminated-redux-boilerplate-with-hooks-for-redux-bd308d5abbdd) is already trying to figure out a way avoid all of this.
 
@@ -22,7 +22,7 @@ You can now define **class properties** assigning them **references** to values 
     
 Components `hardBind`-ed to a key in the store will automatically re-render **only** when that exact key gets updated. *(How cool is that? A lot indeed.)*
 
-To avoid unnecessary re-renders, you can also `softBind` a value to the component: you may want to do so with a **value shared among other `hardBind`-ed components** (where it will actually get rendered), or with a **"static" method** (which never gets rendered).
+To avoid unnecessary re-renders, you can also `softBind` a value to the component: you may want to do so with a **value shared among other** `hardBind`**-ed components** (where it will actually get rendered), or with a **"static" method** (which never gets rendered).
 
 #### Fully typed
 
@@ -52,7 +52,7 @@ import Component from './FluxComponent'
 
 class MyComponent extends Component {/*...*/}
 ```
-* Note: this implementation won't generate a store history. Check the History section if you need history management.
+* *Note*: this implementation won't generate a **store history**. Check the [History section](https://github.com/luisanton-io/react-static-flux-component-ts#history-actions) if you need **history actions**.
 
 ## Usage
 * `hardBind()` or `softBind()` your property (e.g. `answer`) passing its node in the singleton as a parameter (e.g. `Component.shared.answer`)
@@ -85,7 +85,7 @@ console.log(this.answer.value)
 * Updating the binded property will now **automagically** re-render any other component `hardBind`-ed to that same property
 
 ## History actions
-* You can autogenerate a store history, so to `undo` and `redo` and get to an older point in time.
+* You can autogenerate a store history, so to `undo` and `redo` and get to an older or newer point in time.
 * However, you might not want every single property to update the history: for example, properties defining part of the current *view*, like themes, filters etc. 
 * Therefore you can specify two separate initial states as argument in `makeComponent()`, the first containing *untracked* and the second containing *tracked* shared properties.
 
@@ -105,8 +105,10 @@ export default makeComponent(untrackedShared, trackedShared)
 * You can now trigger `Component.actions.undo()` or `Component.actions.redo()` as you wish.
 
 ```TSX
-<button onClick= { Component.actions.undo }> Undo </button>
-<button onClick= { Component.actions.redo }> Redo </button>
+<div>
+    <button onClick= { Component.actions.undo }> Undo </button>
+    <button onClick= { Component.actions.redo }> Redo </button>
+</div>
 ```
 * Should you need to handle **further logic**, note that these methods **return a** `boolean` **value**, reflecting whether the action went throught correctly.
     
