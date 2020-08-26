@@ -33,7 +33,7 @@ This implementation happily relies on almost **no boilerplate**: just provide yo
 
 * Create your `FluxComponent.tsx` 
 ```TSX
-import makeComponent from react-flux-component
+import makeComponent from 'react-flux-component'
 
 //  Albeit not mandatory, it's always a good idea to implement a defined interface:
 //  interface IShared {
@@ -91,7 +91,7 @@ console.log(this.answer.value)
 * Therefore you can specify two separate initial states as argument in `makeComponent()`, the first containing *untracked* and the second containing *tracked* shared properties.
 
 ```TSX
-import makeComponent from react-flux-component
+import makeComponent from 'react-flux-component'
 
 const untrackedShared {
     darkTheme: false
