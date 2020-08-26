@@ -5,6 +5,7 @@ import uniqid from 'uniqid'
 // A shared entry is a pair of a secret string and its corresponding value:
 interface SharedKey<T> {
     secret: string,
+    tracked: boolean,
     value: T
 }
 
@@ -24,9 +25,10 @@ type SharedStore<SS> = {
     [K in keyof SS]: SharedKey<SS[K]>
 }
 
+type SharedStoreEntries = [string, SharedKey<unknown>][]
+
 // Subset of SharedStore
 type SharedSubset = Record<string, unknown>
-type SharedSubsetEntry = [string,SharedKey<unknown>]
 
 // Component's state: children will need to extend this State interface.
 export interface State {
@@ -34,22 +36,24 @@ export interface State {
 }
 
 //https://github.com/microsoft/TypeScript/issues/30355#issuecomment-671095933
-export default <SS extends {}>(initSharedState: SS) =>
+export default <NHS extends {}, HS extends {}, SS = NHS & HS>(noHistoryInitShared: NHS, initShared?: HS) =>
     class FluxComponent<P extends {} = {}, S extends State = State> extends React.Component<P, S> {
 
-        //Exposed and write-protected mirror of private __shared property
-        public static readonly shared: SharedStore<SS> = FluxComponent.makeStore(initSharedState)
+        // #region Exposed
 
-        // Triggers component re-render on update.
-        // Use this when the binded value is needed in this component's rendering.
+        public static readonly shared: SharedStore<SS> = FluxComponent.makeStore(noHistoryInitShared, initShared)
+        // Exposed and write-protected mirror of private __shared property
+
         protected hardBind = <T extends unknown>(sharedKey: SharedKey<T>) => {
+            // Triggers component re-render on update.
+            // Use this when the binded value is needed in this component's rendering.
             const { secret, value } = Object.assign({}, sharedKey)
 
-            if (this.sharedKeys.length === 0) {
+            if (this.secrets.length === 0) {
                 FluxComponent.children.push(this)
             }
 
-            this.sharedKeys.push(secret)
+            this.secrets.push(secret)
 
             if (this.mounted) super.setState({  // (*)
                 ...this.state,
@@ -58,35 +62,32 @@ export default <SS extends {}>(initSharedState: SS) =>
                     [secret]: value
                 }
             })
-            
+
             return this.softBind<T>(sharedKey)
         }
-        
-        // Doesn't trigger component re-render when updated.
-        // Use this to update states shared among external components.
-            protected softBind = <T extends unknown>(sharedKey: SharedKey<T>) => {
-                
-                let { secret } = Object.assign({}, sharedKey)
-                let [key] = (Object.entries(FluxComponent.__shared) as SharedSubsetEntry[]).find( ([,sharedKey]) => {  
-                    return secret === sharedKey.secret
-                })!
-                
-                return {
-                    get value() {
-                        return FluxComponent.__shared[key].value as T
-                    },
-                    set value(value: T) {
-                     
-                    FluxComponent.__shared = Object.freeze({
-                        ...FluxComponent.__shared,
-                        [key]: { secret, value }
-                    } as SharedStore<SS>)
 
-                    FluxComponent.__dispatchToChildren<T>()
+        protected softBind = <T extends unknown>({ secret }: SharedKey<T>) => {
+            // Doesn't trigger component re-render when updated.
+            // Use this to update states shared among other components.
+
+            let [key, { tracked }] = (Object.entries(FluxComponent.__shared) as SharedStoreEntries).find(([, sharedKey]) => {
+                return secret === sharedKey.secret
+            })!
+
+            return {
+                get value() {
+                    return FluxComponent.__shared[key].value as T
+                },
+                set value(value: T) {
+                    FluxComponent.setStore({
+                        ...FluxComponent.__shared,
+                        [key]: { secret, value, tracked }
+                    } as SharedStore<SS>, tracked)
                 }
             }
         }
 
+        //#endregion
         // #region Internal Only
 
         constructor(props: P) {
@@ -95,40 +96,55 @@ export default <SS extends {}>(initSharedState: SS) =>
                 ...this.state,
                 shared: {}
             }
-            this.sharedKeys = []
+            this.secrets = []
         }
 
-        // (*)
+        private secrets: string[]
+
+        private mounted: boolean = false // (*)
         // Checking mounted state is currently considered as an anti-pattern: it should be known whether 
         // the component has been unmounted or not. 
         // However, in this case the setState this might actually get called *before* the component 
         // was mounted - I'll stick with this while looking for a better solution.
-        private mounted: boolean = false
 
-        // Without any noticeable drawback, I preferred this deprecated method over 
-        // componentDidMount = () => {
-        // to avoid a mandatory super.componentDidMount() in children's implementations.
         UNSAFE_componentWillMount = () => {
+            // Without any noticeable drawback, I preferred this deprecated method over 
+            // componentDidMount = () => {
+            // to avoid a mandatory super.componentDidMount() in children's implementations.
             this.mounted = true
         }
 
-        private static __shared: SharedStore<SS>
+        // #region Static
 
-        // Had to declare this protected instead of private, to call it 
-        // from the anonymous class returning from makeComponent.
-        protected static makeStore(initialSharedState: SS) {
+        private static __shared: SharedStore<SS>
+        private static hIndex: number = 0
+        private static history: SharedStore<SS>[]
+
+        private static makeStore(noHistoryInitShared: NHS, initialSharedState?: HS) {
+            //Merging arguments in a unified shared state
+
             let initializedState = {}
 
-            for (let [key, value] of Object.entries(initialSharedState)) {
+            for (let [key, value] of Object.entries(noHistoryInitShared)) {
                 const secret = uniqid()
-                initializedState[key] = { secret, value }
+                let entry: SharedKey<typeof value> = { secret, value, tracked: false }
+                initializedState[key] = entry
             }
 
+            if (initialSharedState)
+                for (let [key, value] of Object.entries(initialSharedState)) {
+                    const secret = uniqid()
+                    let entry: SharedKey<typeof value> = { secret, value, tracked: true }
+                    initializedState[key] = entry
+                }
+
             FluxComponent.__shared = initializedState as SharedStore<SS>
+            FluxComponent.history = [FluxComponent.__shared]
+            FluxComponent.hIndex = 0
 
             let shared = {}
 
-            //FluxComponent.shared[key] dynamically refers to FluxComponent.__shared[key]
+            //Setting FluxComponent.shared[key] to dynamically refer to FluxComponent.__shared[key]
             for (let key of Object.keys(FluxComponent.__shared)) {
                 Object.defineProperty(shared, key, {
                     get: function () {
@@ -140,26 +156,95 @@ export default <SS extends {}>(initSharedState: SS) =>
             return shared as SharedStore<SS>
         }
 
+        public static get actions() {
+            return FluxComponent.__actions
+        }
+
+        private static __actions = {
+            undo(): boolean {
+                if (FluxComponent.hIndex > 0) {
+
+                    // We'll be ignoring any modification to untracked shared values.
+                    // If these have been modified, we don't want to restore them as 
+                    // they were: instead, we'll assign the current value.
+
+                    // const sharedEntries = Object.entries(
+                    //     FluxComponent.history[--FluxComponent.hIndex]
+                    // ) as SharedStoreEntries
+
+                    // let undidState = Object.assign({}, FluxComponent.__shared)
+
+                    // for (let [key, { secret, value, tracked }] of sharedEntries) {
+                    //     if (tracked) undidState[key] = { secret, value }
+                    // }
+
+                    const undidStore = FluxComponent.getStoreFromHistory(--FluxComponent.hIndex)
+
+                    FluxComponent.setStore(
+                        undidStore, false
+                    )
+                    return true
+                } else return false
+            },
+            redo(): boolean {
+                if (FluxComponent.hIndex < FluxComponent.history.length - 1) {
+                    
+                    const redidStore = FluxComponent.getStoreFromHistory(++FluxComponent.hIndex)
+
+                    FluxComponent.setStore(
+                        redidStore, false
+                    )
+                    return true
+                } else return false
+            }
+        }
+
+        private static getStoreFromHistory(hIndex: number) {
+
+            let storeFromHistory = Object.assign({}, FluxComponent.__shared)
+                    
+            const sharedEntries = Object.entries(
+                FluxComponent.history[hIndex]
+            ) as SharedStoreEntries
+
+            for (let [key, sharedKey] of sharedEntries) { // sharedKey = { value, shared, tracked }
+                if (sharedKey.tracked) storeFromHistory[key] = sharedKey
+            }
+
+            return storeFromHistory as SharedStore<SS>
+        }
+
+        private static setStore(newSharedState: SharedStore<SS>,
+            pushingToHistory: boolean) {
+            this.__shared = Object.freeze(newSharedState)
+
+            if (pushingToHistory) {
+                this.history.length = ++this.hIndex
+                this.history.push(newSharedState)
+            }
+
+            this.dispatchToChildren()
+        }
+
         private static children: FluxComponent[] = []
 
-        // Dispatching to each children its binded keys values only
-        private sharedKeys: string[]
-
-        private static __dispatchToChildren<T>() {
+        private static dispatchToChildren() {
+            // Dispatching to each children only its binded values
             for (let child of this.children) {
                 let shared: SharedSubset = {}
 
-                for (let {secret, value} of Object.values(FluxComponent.__shared) as SharedKey<T>[]) {
-                    if (child.sharedKeys.includes(secret)) {
+                for (let { secret, value } of Object.values(FluxComponent.__shared) as SharedKey<unknown>[]) {
+                    if (child.secrets.includes(secret)) {
                         shared[secret] = value
                     }
                 }
 
                 if (!_.isEqual(shared, child.state.shared)) {
-                    child.setState({...child.state, shared})
+                    child.setState({ ...child.state, shared })
                 }
             }
         }
-
         //#endregion
+
+        // #endregion
     }

@@ -1,6 +1,6 @@
 {
   "name": "react-flux-component",
-  "version": "0.1.1",
+  "version": "0.1.12",
   "description": "React component extension providing elegant flux management with automatic, efficient dispatching.",
   "main": "build/index.js",
   "scripts": {
@@ -8,12 +8,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "react", "flux", "redux", "easy", "static", "state"
+    "react",
+    "flux",
+    "redux",
+    "easy",
+    "static",
+    "state"
   ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/prop-types": "^15.7.3",
     "@types/react": "^16.9.46",
     "@types/underscore": "^1.10.22",
     "@types/uniqid": "^5.2.0",
