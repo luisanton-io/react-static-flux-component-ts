@@ -110,7 +110,7 @@ export default makeComponent(untrackedShared, trackedShared)
     <button onClick= { Component.actions.redo }> Redo </button>
 </div>
 ```
-* Should you need to handle **further logic**, note that these methods **return a** `boolean` **value**, reflecting whether the action went throught correctly.
+* Should you need to handle **further logic**, note that these methods **return a** `boolean` **value**, reflecting whether the action went through correctly.
     
 ## Warning
 * Components' state `interfaces` **must** extend `{ State }` from `'react-flux-component'` and **preserve** the data injected in FluxComponent constructor; unexpected behaviors will be encountered otherwise. This happens because all the shared data is stored in each component's state in `this.state.shared`:
