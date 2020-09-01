@@ -52,8 +52,7 @@ import Component from './FluxComponent'
 
 class MyComponent extends Component {/*...*/}
 ```
-* *Note*: this implementation won't generate a **store history**. Check the [History section](https://github.com/luisanton-io/react-static-
--ts#history-actions) if you need **history actions**.
+* *Note*: this implementation won't generate a **store history**. Check the [History section](https://github.com/luisanton-io/react-static-flux-component-ts#history-actions) if you need **history actions**.
 
 ## Usage
 * `hardBind()` or `softBind()` your property (e.g. `answer`) passing its node in the singleton as a parameter (e.g. `Component.shared.answer`)
@@ -114,8 +113,23 @@ export default makeComponent(untrackedShared, trackedShared)
 * Should you need to handle **further logic**, note that these methods **return a** `boolean` **value**, reflecting whether the action went throught correctly.
     
 ## Warning
-* Components' state `interfaces` **must** extend `{ State }` from `'react-flux-component'`
-* Mutating a `hard-bind`-ed property inside the `render()` method will cause an **infinite render loop**! ;)
+* Components' state `interfaces` **must** extend `{ State }` from `'react-flux-component'` and **preserve** the data injected in FluxComponent constructor; unexpected behaviors will be encountered otherwise. This happens because all the shared data is stored in each component's state in `this.state.shared`:
+```TSX
+    import { State } from 'react-flux-component'
+    
+    interface MyComponentState extends State {
+        whatever: number
+    }
+    
+    class MyComponent extends Component<{}, MyComponentState> {
+        state: MyComponentState = {
+            ...this.state, // Don't forget this!
+            whatever: 123
+        }
+        // ...
+    }
+```
+* Mutating a `hardBind`-ed property inside the `render()` method will cause an **infinite render loop**! ;)
 
 ## Example Repo
 * [Minimal Counter Example](https://codesandbox.io/s/fervent-banzai-168gu)
